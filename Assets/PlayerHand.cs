@@ -7,6 +7,7 @@ public class PlayerHand : MonoBehaviour
     private Transform _heldItem = null;
     private Rigidbody _heldItemRB = null;
     private Pickupable _heldItemPick = null;
+    public IUsableTool HeldTool { get; private set; }
     private Collider _trigger;
 
     private AnimationCurve _floatyForceMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.1f, 0.6f, 1f);
@@ -38,6 +39,12 @@ public class PlayerHand : MonoBehaviour
 
             Vector3.ClampMagnitude(d, 0.5f);
             _heldItem.position = transform.position - d;
+
+            
+            if (HeldTool != null )
+            {
+                // TODO: Enable button prompts for using tool
+            }
         }
     }
 
@@ -52,6 +59,7 @@ public class PlayerHand : MonoBehaviour
                 _heldItem = other.attachedRigidbody.transform;
                 _heldItemPick = pick;
                 _heldItemRB = other.attachedRigidbody;
+                HeldTool = _heldItem.gameObject.GetComponent<IUsableTool>();
             }
         }
     }
