@@ -31,7 +31,11 @@ public class PlayerHand : MonoBehaviour
             Vector3 d = transform.position - _heldItem.position;
             _heldItemRB.AddForce(d * _heldItemPick.FloatyForce * _floatyForceMultiplierCurve.Evaluate(d.magnitude));
             _heldItemRB.useGravity = false;
-            _heldItemRB.MoveRotation(transform.rotation);
+            //_heldItemRB.MoveRotation(transform.rotation);
+
+            _heldItemRB.AddTorque(Vector3.Cross(_heldItemRB.transform.forward,transform.forward) * 2);
+            _heldItemRB.AddTorque(Vector3.Cross(_heldItemRB.transform.up, transform.up));
+
             Vector3.ClampMagnitude(d, 0.5f);
             _heldItem.position = transform.position - d;
         }
@@ -39,7 +43,7 @@ public class PlayerHand : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other != null && other.attachedRigidbody != null)
+        if (_heldItem == null && other != null && other.attachedRigidbody != null)
         {
             Pickupable pick = other.attachedRigidbody.transform.GetComponent<Pickupable>();
             if (pick != null)
