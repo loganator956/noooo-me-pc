@@ -10,15 +10,15 @@ public class PlayerHand : MonoBehaviour
     public IUsableTool HeldTool { get; private set; }
     private Collider _trigger;
 
-    private AnimationCurve _floatyForceMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.1f, 0.2f, 0.3f);
+    private AnimationCurve _floatyForceMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.5f, 1f, 1.5f);
+    private AnimationCurve _floatyRotateTorqueMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.25f, 1f, 1f);
 
     public const float FLOATY_FORCE = 1.5f;
+    public float HardMaxDistance = 1f;
 
     private void Awake()
     {
         _trigger = GetComponent<Collider>();
-        _floatyForceMultiplierCurve.AddKey(0.6f, 0.7f);
-        _floatyForceMultiplierCurve.AddKey(1f, 1.1f);
     }
 
     // Start is called before the first frame update
@@ -45,13 +45,28 @@ public class PlayerHand : MonoBehaviour
 
 
             // rotation
-            Debug.Log(Vector3.Cross(_heldItemRB.transform.forward, transform.forward).magnitude);
-            _heldItemRB.AddTorque(Vector3.Cross(_heldItemRB.transform.forward,transform.forward) * 2);
-            _heldItemRB.AddTorque(Vector3.Cross(_heldItemRB.transform.up, transform.up));
+            Vector3 fwd = Vector3.Cross(_heldItemRB.transform.forward, transform.forward);
 
-            //_heldItem.position = transform.position - d;
+            _heldItemRB.AddTorque(_floatyRotateTorqueMultiplierCurve.Evaluate(fwd.magnitude) * fwd * 5); // looking forward (does rotation on x and y local axis)
+            _heldItemRB.AddTorque(Vector3.Cross(_heldItemRB.transform.up, transform.up) * 5); // keeps gun handle down (does rotation on z)
 
-            
+            Vector3 forwardsVelocity = transform.forward * Vector3.Dot(_heldItemRB.velocity, transform.forward);
+            Vector3 rightVelocity = transform.right * Vector3.Dot(_heldItemRB.velocity, transform.right);
+
+            Vector3 forwardsDelta = transform.forward * Vector3.Dot(d, transform.forward);
+            Vector3 rightDelta = transform.right * Vector3.Dot(d, transform.right);
+
+            Debug.Log(forwardsVelocity.z);
+            if (forwardsVelocity.z > 0)
+                forwardsDelta = Vector3.ClampMagnitude(forwardsDelta, HardMaxDistance * 1.2f);
+            else
+                forwardsDelta = Vector3.ClampMagnitude(forwardsDelta, HardMaxDistance * 0.5f);
+            if (true || rightVelocity.x > 0)
+                rightDelta = Vector3.ClampMagnitude(rightDelta, HardMaxDistance);
+
+            Vector3 clampedDelta = forwardsDelta + rightDelta;
+            _heldItem.position = transform.position - clampedDelta;
+
             if (HeldTool != null )
             {
                 // TODO: Enable button prompts for using tool
