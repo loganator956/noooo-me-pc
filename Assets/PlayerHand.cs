@@ -15,6 +15,7 @@ public class PlayerHand : MonoBehaviour
 
     public const float FLOATY_FORCE = 1.5f;
     public float HardMaxDistance = 1f;
+    public float FlingForce = 150f;
 
     private void Awake()
     {
@@ -76,7 +77,7 @@ public class PlayerHand : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_heldItem == null && other != null && other.attachedRigidbody != null)
+        if (_heldItem == null && other != null && other.attachedRigidbody != null && other.attachedRigidbody != _blacklistedRB) // TODO: make it so cant pickup a flung gun
         {
             Pickupable pick = other.attachedRigidbody.transform.GetComponent<Pickupable>();
             if (pick != null)
@@ -88,5 +89,29 @@ public class PlayerHand : MonoBehaviour
                 HeldTool = _heldItem.gameObject.GetComponent<IUsableTool>();
             }
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.attachedRigidbody != null && other.attachedRigidbody == _blacklistedRB)
+            _blacklistedRB = null;
+    }
+
+    private Rigidbody _blacklistedRB = null;
+
+    public void ChuckTool()
+    {
+        _heldItemPick.enabled = true;
+        _heldItemRB.useGravity = true;
+        _heldItemRB.AddForce(transform.forward * FlingForce, ForceMode.Impulse);
+        _heldItemRB.AddTorque(_heldItemRB.GetAccumulatedTorque() * 2, ForceMode.Impulse);
+        _heldItemRB.AddTorque(_heldItem.right * 20, ForceMode.Impulse);
+
+        _blacklistedRB = _heldItemRB;
+
+        _heldItem = null;
+        _heldItemPick = null;
+        _heldItemRB = null;
+        HeldTool = null;
     }
 }
