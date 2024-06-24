@@ -556,6 +556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HardMaxDistance: 1
+  FlingForce: 150
 --- !u!1 &569444528
 GameObject:
   m_ObjectHideFlags: 0

@@ -19,4 +19,9 @@ public class PlayerInputReceiver : MonoBehaviour
             _hand.HeldTool.UseTool();
         }
     }
+
+    private void OnChuck()
+    {
+        _hand.ChuckTool();
+    }
 }
