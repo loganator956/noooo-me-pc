@@ -16,6 +16,10 @@ public class TeamManager : MonoBehaviour
     private void Awake()
     {
         _manager = GetComponent<GameManager>();
+        for (int i = 0; i < TeamCount; i++)
+        {
+            TeamList.Add(new Team("Untitled Team"));
+        }
     }
 
     public int RegisterCharacterToAnyTeam(CharacterController controller)
@@ -63,10 +67,7 @@ public class TeamManager : MonoBehaviour
 
     private void Start()
     {
-        for (int i = 0; i < TeamCount;i ++)
-        {
-            TeamList.Add(new Team("Untitled Team"));
-        }
+        
     }
 }
 

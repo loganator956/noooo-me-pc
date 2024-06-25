@@ -41,6 +41,7 @@ public class EnemyController : MonoBehaviour
         GameObject agentObject = new GameObject("Enemy Navigation Agent");
         _agent = agentObject.AddComponent<NavMeshAgent>();
         _agentTransform = agentObject.transform;
+        _agentTransform.SetParent(transform);
         _teamManager.RegisterCharacterToSpecificTeam(GetComponent<CharacterController>(), TeamIndex);
         _agentTransform.position = transform.position - Vector3.up * -0.5f;
         _agent.speed = 12f;
@@ -49,18 +50,15 @@ public class EnemyController : MonoBehaviour
         UpdateFlagCache();
     }
 
+    private float _pathAge = 8f;
+    private List<Vector3> _pathPoints = new List<Vector3>();
+
     // Update is called once per frame
     void Update()
     {
-        Vector3 delta = _agentTransform.position - transform.position;
-        if (delta.magnitude > MAX_AGENT_DISTANCE)
-        {
-            _agent.enabled = false;
-        }
-        else
-        {
-            _agent.enabled = true;
-        }
+        _movement.CameraForward = transform.forward;
+        float distance = (_agentTransform.position - transform.position).magnitude;
+        _agent.enabled = distance < MAX_AGENT_DISTANCE;
 
         // set target:
         // if can see enemy, target enemy
@@ -74,18 +72,51 @@ public class EnemyController : MonoBehaviour
             }
             else
             {
-                _agent.SetDestination(GetClosestFlag().position);
+                /*_agent.SetDestination(GetClosestFlag().position);*/
+                if (_pathAge > 10)
+                {
+                    _pathPoints = GeneratePath(GetClosestFlag().position);
+                    _pathAge = 0;
+                }
+                else
+                {
+                    _pathAge += Time.deltaTime;
+                }
             }
         }
 
-        Vector3 transformedDelta = transform.InverseTransformPoint(_agentTransform.position);
-        transformedDelta.y = 0;
+        if (_pathPoints.Count > 0)
+        {
+            Vector3 nextPoint = _pathPoints[0];
+            nextPoint.y = transform.position.y;
+            Vector3 deltaToNextPoint = nextPoint - transform.position;
+            float distanceToNextPoint = deltaToNextPoint.magnitude;
+            Vector3 directionToNextPoint = deltaToNextPoint.normalized;
+            Vector3 localDirectionToNextPoint = transform.InverseTransformDirection(directionToNextPoint);
+            _movement.Move(new Vector2(localDirectionToNextPoint.x * Mathf.Clamp(distanceToNextPoint / _movement.WalkSpeed, -1f, 1f), localDirectionToNextPoint.z * Mathf.Clamp(distanceToNextPoint / _movement.WalkSpeed, -1f, 1f)));
+            if (distanceToNextPoint < 1f)
+                _pathPoints.RemoveAt(0);
+        }
 
-        float forwardsInput = transformedDelta.normalized.z;
-        float rightInput = transformedDelta.normalized.x;
+        //_movement.Move(new Vector2(rightInput, forwardsInput));
+        /*transform.LookAt(_agentTransform.position, Vector3.up);*/
+    }
 
-        _movement.Move(new Vector2(rightInput, forwardsInput));
-        transform.LookAt(_agentTransform.position, Vector3.up);
+    public List<Vector3> GeneratePath(Vector3 Destination)
+    {
+        var path = new List<Vector3>();
+        _agent.enabled = true;
+        _agentTransform.position = transform.position;
+        if (_agent.SetDestination(Destination))
+        {
+            foreach(var corner in _agent.path.corners)
+            {
+                path.Add(corner);
+            }
+            path.Add(_agent.destination);
+        }
+        _agent.enabled = false;
+        return path;
     }
 
     private bool CheckVisibleEnemy(out Transform enemyTransform)
