@@ -1,4 +1,5 @@
 using CharacterSystems.Movement;
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -83,7 +84,8 @@ public class EnemyController : MonoBehaviour
         float forwardsInput = transformedDelta.normalized.z;
         float rightInput = transformedDelta.normalized.x;
 
-        //_movement.Move(new Vector2(rightInput, forwardsInput));
+        _movement.Move(new Vector2(rightInput, forwardsInput));
+        transform.LookAt(_agentTransform.position, Vector3.up);
     }
 
     private bool CheckVisibleEnemy(out Transform enemyTransform)
@@ -125,6 +127,6 @@ public class EnemyController : MonoBehaviour
         Gizmos.color = Color.yellow;
         if (_agentTransform == null)
             return;
-        Gizmos.DrawLine(transform.position, transform.position + transform.InverseTransformDirection(_agentTransform.position - transform.position));
+        Gizmos.DrawLine(transform.position, transform.position - transform.InverseTransformPoint(_agentTransform.position));
     }
 }
