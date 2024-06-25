@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(PlayerInput))]
 public class CharacterRotateyFP : MonoBehaviour
 {
     private Vector2 _lookInputs;
