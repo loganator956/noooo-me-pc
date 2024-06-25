@@ -1,5 +1,7 @@
+using CharacterSystems.Movement;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UIElements;
@@ -18,6 +20,8 @@ public class EnemyController : MonoBehaviour
 
     private List<PickupableFlag> _flagTargets = new List<PickupableFlag>();
 
+    private CharacterMovement3D _movement;
+
     public int TeamIndex { private set; get; }
 
     private void Awake()
@@ -25,7 +29,10 @@ public class EnemyController : MonoBehaviour
         _teamManager = FindAnyObjectByType<TeamManager>();
         _gameManager = FindAnyObjectByType<GameManager>();
         TeamIndex = 1; 
+        _movement = GetComponent<CharacterMovement3D>();
     }
+
+    public float RotateySpeed = 20f;
 
     // Start is called before the first frame update
     void Start()
@@ -35,7 +42,7 @@ public class EnemyController : MonoBehaviour
         _agentTransform = agentObject.transform;
         _teamManager.RegisterCharacterToSpecificTeam(GetComponent<CharacterController>(), TeamIndex);
         _agentTransform.position = transform.position - Vector3.up * -0.5f;
-
+        _agent.speed = 12f;
         _gameManager.AnyFlagOwnerChanged.AddListener(UpdateFlagCache);
 
         UpdateFlagCache();
@@ -69,6 +76,14 @@ public class EnemyController : MonoBehaviour
                 _agent.SetDestination(GetClosestFlag().position);
             }
         }
+
+        Vector3 transformedDelta = transform.InverseTransformPoint(_agentTransform.position);
+        transformedDelta.y = 0;
+
+        float forwardsInput = transformedDelta.normalized.z;
+        float rightInput = transformedDelta.normalized.x;
+
+        //_movement.Move(new Vector2(rightInput, forwardsInput));
     }
 
     private bool CheckVisibleEnemy(out Transform enemyTransform)
@@ -103,5 +118,13 @@ public class EnemyController : MonoBehaviour
     public List<CharacterController> GetNearbyCharacters()
     {
         return null;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        if (_agentTransform == null)
+            return;
+        Gizmos.DrawLine(transform.position, transform.position + transform.InverseTransformDirection(_agentTransform.position - transform.position));
     }
 }
