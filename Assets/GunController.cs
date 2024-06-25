@@ -9,6 +9,8 @@ public class GunController : MonoBehaviour, IUsableTool
     public float BulletForce = 5f;
     public Vector3 BulletStartPos = Vector3.zero;
     public Vector3 LocalBulletFireDirection = Vector3.forward;
+    public Vector3 RecoilVector = -Vector3.right;
+    public float RecoilForce = 10f;
 
     void IUsableTool.UseTool()
     {
@@ -16,6 +18,7 @@ public class GunController : MonoBehaviour, IUsableTool
         b.transform.position = transform.TransformPoint(BulletStartPos);
         Rigidbody rb = b.GetComponent<Rigidbody>();
         rb.AddForce(transform.TransformDirection(LocalBulletFireDirection) * BulletForce, ForceMode.Impulse);
+        GetComponent<Rigidbody>().AddTorque(transform.TransformDirection(RecoilVector) * RecoilForce, ForceMode.Impulse);
     }
 
     // TODO: Add object oriented ammo (like reference the ammo box and take things out and player has to replace it??

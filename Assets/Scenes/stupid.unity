@@ -489,6 +489,8 @@ MonoBehaviour:
   BulletForce: 50
   BulletStartPos: {x: 0, y: 0.26, z: 0.51}
   LocalBulletFireDirection: {x: 0, y: 0.05009872, z: 0.99874425}
+  RecoilVector: {x: -1, y: 0, z: 0}
+  RecoilForce: 10
 --- !u!1 &503357327
 GameObject:
   m_ObjectHideFlags: 0
