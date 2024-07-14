@@ -24,6 +24,7 @@ public class TeamManager : MonoBehaviour
 
     public int RegisterCharacterToAnyTeam(CharacterController controller)
     {
+        Debug.Log("Registering Any");
         int tIndex = 0;
         if (FairTeams)
         {
@@ -47,13 +48,16 @@ public class TeamManager : MonoBehaviour
         TeamList[tIndex].Characters.Add(controller);
         OnTeamList_Changed.Invoke();
 
+        PrintTeams();
         return tIndex;
     }
 
     public void RegisterCharacterToSpecificTeam(CharacterController controller, int tIndex)
     {
+        Debug.Log("Registering Specific");
         TeamList[tIndex].Characters.Add(controller);
         OnTeamList_Changed.Invoke();
+        PrintTeams();
     }
 
     public List<PickupableFlag> GetTargetFlags(int RequestingCharacterTeamIndex)
@@ -68,6 +72,30 @@ public class TeamManager : MonoBehaviour
     private void Start()
     {
         
+    }
+
+    public List<Transform> GetAllOpponents(int RequestingCharacterTeamIndex)
+    {
+        List<Transform> opponents = new List<Transform>();
+        for (int i = 0; i < TeamList.Count; i++)
+        {
+            if (i != RequestingCharacterTeamIndex)
+                foreach (CharacterController cc in TeamList[i].Characters)
+                    opponents.Add(cc.transform);
+        }
+        return opponents;
+    }
+
+    public void PrintTeams()
+    {
+        for (int i = 0; i < TeamList.Count; i++)
+        {
+            Debug.Log($"TEAM {i}");
+            for (int j = 0; j < TeamList[i].Characters.Count; j++) {
+                Debug.Log($"  Character {j} | {TeamList[i].Characters[j].transform.name}");
+            }
+        }
+
     }
 }
 
