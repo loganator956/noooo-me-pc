@@ -16,7 +16,7 @@ public class PlayerInputReceiver : MonoBehaviour
     {
         if (_hand.HeldTool != null)
         {
-            _hand.HeldTool.UseTool();
+            _hand.HeldTool.UseTool(_hand);
         }
     }
 

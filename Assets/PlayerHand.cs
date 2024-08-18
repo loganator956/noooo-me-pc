@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerHand : MonoBehaviour
@@ -13,7 +14,7 @@ public class PlayerHand : MonoBehaviour
     private AnimationCurve _floatyForceMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.5f, 1f, 1.5f);
     private AnimationCurve _floatyRotateTorqueMultiplierCurve = AnimationCurve.EaseInOut(0f, 0.001f, 1f, 2.5f);
 
-    private AnimationCurve _floatyRotateTorqueDragCurve = AnimationCurve.EaseInOut(0f, 0.985f, 0.9f, 1f);
+    private AnimationCurve _floatyRotateTorqueDragCurve = AnimationCurve.EaseInOut(0f, 0.7f, 1f, 1f);
     private AnimationCurve _floatyForceDragCurve = AnimationCurve.EaseInOut(0f, 0.985f, 1f, 1f);
 
     public const float FLOATY_FORCE = 1.5f;
@@ -44,16 +45,6 @@ public class PlayerHand : MonoBehaviour
             Debug.Log(d.magnitude);
             _heldItemRB.velocity *= _floatyForceDragCurve.Evaluate(d.magnitude);
 
-
-            // rotation
-            Vector3 fwd = Vector3.Cross(_heldItemRB.transform.forward, transform.forward);
-            Vector3 updown = Vector3.Cross(_heldItemRB.transform.up, transform.up);
-
-            _heldItemRB.angularVelocity *= _floatyRotateTorqueDragCurve.Evaluate(Mathf.Max(fwd.magnitude, updown.magnitude));
-
-            _heldItemRB.AddTorque(_floatyRotateTorqueMultiplierCurve.Evaluate(fwd.magnitude) * fwd * 2); // looking forward (does rotation on x and y local axis)
-            _heldItemRB.AddTorque(_floatyRotateTorqueMultiplierCurve.Evaluate(updown.magnitude) * updown * 2); // keeps gun handle down (does rotation on z)
-
             Vector3 forwardsVelocity = transform.forward * Vector3.Dot(_heldItemRB.velocity, transform.forward);
             Vector3 rightVelocity = transform.right * Vector3.Dot(_heldItemRB.velocity, transform.right);
 
@@ -70,9 +61,36 @@ public class PlayerHand : MonoBehaviour
             Vector3 clampedDelta = forwardsDelta + rightDelta;
             _heldItem.position = transform.position - clampedDelta;
 
+
             if (HeldTool != null )
             {
                 // TODO: Enable button prompts for using tool
+            }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (_heldItem is not null)
+        {
+            // rotation
+            Vector3 fwd = Vector3.Cross(_heldItemRB.transform.forward, transform.forward);
+            Vector3 updown = Vector3.Cross(_heldItemRB.transform.up, transform.up);
+
+            _heldItemRB.angularVelocity *= _floatyRotateTorqueDragCurve.Evaluate(Mathf.Max(fwd.magnitude, updown.magnitude));
+
+            if (fwd.magnitude > 1f)
+            {
+                fwd = -fwd * 0.8f;
+            }
+
+            _heldItemRB.AddTorque(_floatyRotateTorqueMultiplierCurve.Evaluate(fwd.magnitude) * fwd * 20); // looking forward (does rotation on x and y local axis)
+            _heldItemRB.AddTorque(_floatyRotateTorqueMultiplierCurve.Evaluate(updown.magnitude) * updown * 2); // keeps gun handle down (does rotation on z)
+            if (_recoilCompensation_T > 0 && _recoilCompensationAmount > 0)
+            {
+                _heldItemRB.AddTorque(_heldItemRB.transform.right * _recoilCompensationAmount, ForceMode.Force);
+                _recoilCompensation_T -= Time.fixedDeltaTime;
+                _recoilCompensationAmount *= 0.9f;
             }
         }
     }
@@ -91,6 +109,14 @@ public class PlayerHand : MonoBehaviour
                 HeldTool = _heldItem.gameObject.GetComponent<IUsableTool>();
             }
         }
+    }
+
+    private float _recoilCompensation_T, _recoilCompensationAmount;
+
+    public void AddRocoilCompensation(float maxAmount)
+    {
+        _recoilCompensation_T += 0.1f;
+        _recoilCompensationAmount += maxAmount;
     }
 
     private void OnTriggerExit(Collider other)

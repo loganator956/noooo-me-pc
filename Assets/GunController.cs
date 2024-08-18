@@ -12,13 +12,14 @@ public class GunController : MonoBehaviour, IUsableTool
     public Vector3 RecoilVector = -Vector3.right;
     public float RecoilForce = 10f;
 
-    void IUsableTool.UseTool()
+    void IUsableTool.UseTool(PlayerHand callingHand)
     {
         GameObject b = Instantiate(BulletPrefab);
         b.transform.position = transform.TransformPoint(BulletStartPos);
         Rigidbody rb = b.GetComponent<Rigidbody>();
         rb.AddForce(transform.TransformDirection(LocalBulletFireDirection) * BulletForce, ForceMode.Impulse);
         GetComponent<Rigidbody>().AddTorque(transform.TransformDirection(RecoilVector) * RecoilForce, ForceMode.Impulse);
+        callingHand.AddRocoilCompensation(RecoilForce);
     }
 
     // TODO: Add object oriented ammo (like reference the ammo box and take things out and player has to replace it??
