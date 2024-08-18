@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IUsableTool
 {
-    public void UseTool();
+    public void UseTool(PlayerHand callingHand);
 }
