@@ -42,7 +42,6 @@ public class PlayerHand : MonoBehaviour
             _heldItemRB.AddForce(d * FLOATY_FORCE * _heldItemPick.FloatyForce * _floatyForceMultiplierCurve.Evaluate(d.magnitude));
             _heldItemRB.useGravity = false;
             //_heldItemRB.MoveRotation(transform.rotation);
-            Debug.Log(d.magnitude);
             _heldItemRB.velocity *= _floatyForceDragCurve.Evaluate(d.magnitude);
 
             Vector3 forwardsVelocity = transform.forward * Vector3.Dot(_heldItemRB.velocity, transform.forward);
