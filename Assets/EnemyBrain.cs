@@ -95,8 +95,11 @@ public class EnemyBrain : MonoBehaviour
                     RaycastHit hit;
                     if (Physics.Raycast(transform.position, (CurrentEnemyTarget.position - transform.position).normalized, out hit, OpponentSpottingDistance))
                     {
-                        if (hit.transform == CurrentEnemyTarget || hit.transform.parent.parent == CurrentEnemyTarget)
+                        // null reference is from ray hitting player directly, or something else and trying to reference a non existing parent (and grandparent)
+
+                        if (hit.transform == CurrentEnemyTarget)
                         {
+                            controller.Target = controller.transform.position;
                             enableVelocityRotator = false;
                             // TODO: Aim at player
                             float angle = Vector3.SignedAngle(transform.forward, (CurrentEnemyTarget.position - transform.position).normalized, transform.up);
@@ -106,6 +109,10 @@ public class EnemyBrain : MonoBehaviour
                     else
                     {
                         // TODO: Get closer to opponent
+                        if (!controller.HasPath || controller.PathAge > 5)
+                        {
+                            controller.Target = CurrentEnemyTarget.position;
+                        }
                     }
                 }
                 break;

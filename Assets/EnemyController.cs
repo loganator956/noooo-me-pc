@@ -29,7 +29,7 @@ public class EnemyController : MonoBehaviour
     {
         _teamManager = FindAnyObjectByType<TeamManager>();
         _gameManager = FindAnyObjectByType<GameManager>();
-        TeamIndex = 1; 
+        TeamIndex = 1;
         _movement = GetComponent<CharacterMovement3D>();
     }
 
@@ -47,14 +47,14 @@ public class EnemyController : MonoBehaviour
         _agent.speed = 12f;
     }
 
-    private float _pathAge = 8f;
+    private float _pathTCountdown = 8f;
     private List<Vector3> _pathPoints = new List<Vector3>();
 
     // Update is called once per frame
     void Update()
     {
-        _pathAge -= Time.deltaTime;
-        if (_pathAge < 0 && _pathPoints.Count > 0)
+        _pathTCountdown -= Time.deltaTime;
+        if (_pathTCountdown < 0 && _pathPoints.Count > 0)
         {
             _pathPoints = GeneratePath(Target);
         }
@@ -65,6 +65,7 @@ public class EnemyController : MonoBehaviour
 
         if (_pathPoints.Count > 0)
         {
+            PathAge += Time.deltaTime;
             Vector3 nextPoint = _pathPoints[0];
             nextPoint.y = transform.position.y;
             Vector3 deltaToNextPoint = nextPoint - transform.position;
@@ -81,15 +82,23 @@ public class EnemyController : MonoBehaviour
         }
     }
 
+    public bool HasPath
+    {
+        get
+        {
+            return _pathPoints.Count > 0;
+        }
+    }
+
     public List<Vector3> GeneratePath(Vector3 Destination)
     {
-        _pathAge = 4;
+        _pathTCountdown = 4;
         var path = new List<Vector3>();
         _agent.enabled = true;
         _agentTransform.position = transform.position;
         if (_agent.SetDestination(Destination))
         {
-            foreach(var corner in _agent.path.corners)
+            foreach (var corner in _agent.path.corners)
             {
                 path.Add(corner);
             }
@@ -103,10 +112,16 @@ public class EnemyController : MonoBehaviour
     public Vector3 Target
     {
         get { return _target; }
-        set 
-        { 
+        set
+        {
             _target = value;
-            _pathPoints = GeneratePath(Target);
+            if (_target != transform.position)
+                _pathPoints = GeneratePath(Target);
+            else
+                _pathPoints.Clear();
+            PathAge = 0;
         }
     }
+
+    public float PathAge = 0;
 }
